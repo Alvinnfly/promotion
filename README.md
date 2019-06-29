@@ -1,5 +1,5 @@
 # promotion
-A homemade flexget plugin to detect torrents' promotion status, only support NexusPHP based private trackers.
+A homemade flexget plugin to detect torrents' promotion status, only support private trackers based on NexusPHP.
 # usage
 - download promotion.py to dist-packages/flexget/plugins/filter
 - add `other_fields: [link]` to rss plugin
