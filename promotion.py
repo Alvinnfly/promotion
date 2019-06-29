@@ -22,10 +22,12 @@ class Filter_Promotion(object):
 		HDChina TJUPT NYPT Ourbits BYRBT NPUBits MTeam...
 
 		Example::
-			promotion: 
+			promotion:
 			  action: accept
-			  cookie: * your cookie here *
+			  cookie: your cookie here
+			  username: your username here
 			  promotion: free/twoupfree/halfdown/twouphalfdown/thirtypercent/none
+			  not_hr: yes [optional]
 
 	"""
 
@@ -33,7 +35,7 @@ class Filter_Promotion(object):
 	          'properties': {
 		          'action': {
 			          'type': 'string',
-			          'enum': ['accept', 'reject'],
+			          'enum': ['accept', 'reject', 'do_nothing'],
 			          'default': 'accept',
 		          },
 		          'cookie': {
@@ -47,19 +49,29 @@ class Filter_Promotion(object):
 			          'enum': ['free', 'twoupfree', 'halfdown', 'twouphalfdown', 'thirtypercent', 'none'],
 			          'default': 'free',
 		          },
+		          'not_hr': {
+			          'type': 'boolean',
+			          'enum': [True, False],
+			          'default': False,
+		          },
 	          },
 	          }
 
 	# Run later to avoid unnecessary lookups
 	@plugin.priority(115)
 	def on_task_filter(self, task, config):
+		# check some details first
+		##check entry's link field
+		if not task.entries[0].get('link'):
+			log.critical('link not found, plz add "other_fields: [link]" to rss plugin config')
+			return False
+		##`not_hr` is only available for ourbits
+		if config['not_hr'] and 'ourbits' not in task.entries[0].get('link'):
+			log.critical('`not_hr` parameter is only available for ourbits')
+			return False
+
 		for entry in task.entries:
 			link = entry.get('link')
-			try:
-				assert link
-			except:
-				log.critical('link not found, plz add "other_fields: [link]" to rss plugin config')
-
 			if config['action'] == 'accept':
 				if self.detect_promotion_status(link, config):
 					entry.accept('Entry `%s` is `%s`' % (entry['title'], config['promotion']), remember=True)
@@ -111,19 +123,27 @@ class Filter_Promotion(object):
 			log.info(response)
 			return False
 
-		# detect promotion status
+		# get details_dict
 		if "hdchina.org" in link:
-			promotion = self.analyze_hdc_promotion(response)
+			details_dict = self.analyze_hdc_detail(response)
+		elif "tjupt.org" in link:
+			details_dict = self.analyze_tju_detail(response)
+		elif "ourbits.club" in link:
+			details_dict = self.analyze_ob_detail(response)
 		else:
-			promotion = self.analyze_nexusphp_promotion(response)
+			details_dict = self.analyze_nexusphp_detail(response)
+
+		# process ourbits h&r
+		if config['not_hr'] and details_dict['is_hr']:
+			return False
 
 		# return accept or reject according to config['promotion']
-		if promotion == config['promotion']:
+		if details_dict['promotion'] == config['promotion']:
 			return True
 		else:
 			return False
 
-	def analyze_hdc_promotion(self, response):
+	def analyze_hdc_detail(self, response):
 		convert = {
 			'Free': 'free',
 			'2X Free': 'twoupfree',
@@ -137,22 +157,58 @@ class Filter_Promotion(object):
 		if promotion_element:
 			promotion = convert[promotion_element['alt']]
 			log.verbose('torrent promotion status is {}'.format(promotion))
-			return promotion
+			return {'promotion': promotion}
 		else:
 			log.verbose('torrent has no promotion')
-			return 'none'
+			return {'promotion': 'none'}
 
-	def analyze_nexusphp_promotion(self, response):
+	def analyze_nexusphp_detail(self, response):
+		soup = BeautifulSoup(response, 'html.parser')
+		topic_element = soup.find_all('h1', id="top")[0]
+		promotion_element = topic_element.b
+		if promotion_element:
+			promotion = promotion_element.font['class'][0]
+			log.verbose('torrent promotion status is {}'.format(promotion))
+			return {'promotion': promotion}
+		else:
+			log.verbose('torrent has no promotion')
+			return {'promotion': 'none'}
+
+	def analyze_tju_detail(self, response):
 		soup = BeautifulSoup(response, 'html.parser')
 		topic_element = soup.find_all('h1', id="top")[0]
 		promotion_element = topic_element.font
 		if promotion_element:
 			promotion = promotion_element['class'][0]
 			log.verbose('torrent promotion status is {}'.format(promotion))
-			return promotion
+			return {'promotion': promotion}
 		else:
 			log.verbose('torrent has no promotion')
-			return 'none'
+			return {'promotion': 'none'}
+
+	def analyze_ob_detail(self, response):
+		details_dict = {}
+		soup = BeautifulSoup(response, 'html.parser')
+		topic_element = soup.find_all('h1', id="top")[0]
+
+		promotion_element = topic_element.b
+		if promotion_element:
+			promotion = promotion_element.font['class'][0]
+			log.verbose('torrent promotion status is {}'.format(promotion))
+			details_dict['promotion'] = promotion
+		else:
+			log.verbose('torrent has no promotion')
+			details_dict['promotion'] = 'none'
+
+		hr_element = topic_element.img
+		if hr_element:
+			log.verbose('torrent is h&r')
+			details_dict['is_hr'] = True
+		else:
+			log.verbose('torrent is not h&r')
+			details_dict['is_hr'] = False
+
+		return details_dict
 
 
 @event('plugin.register')
