@@ -38,6 +38,7 @@ tasks:
 ```
 # warning
 only tested for the following sites: HDChina TJUPT NYPT Ourbits BYRBT MTeam
+
 *theoratically* works for all sites based on NexusPHP, but if it met some sites such as HDChina which changed its frontend, it would crush. 
 # to-do list
 detect Ourbits's h&r status
