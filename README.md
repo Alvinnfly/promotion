@@ -11,7 +11,7 @@ promotion:
   promotion: free/twoupfree/halfdown/twouphalfdown/thirtypercent/none
 ```
 - run flexget
-# demo config.yml
+# a demo config.yml
 executing the following configuration file would add free torrents in rss link to transmission
 ```
 templates:
