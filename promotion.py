@@ -59,6 +59,10 @@ class Filter_Promotion(object):
 	# Run later to avoid unnecessary lookups
 	@plugin.priority(115)
 	def on_task_filter(self, task, config):
+		# some time flexget do strange things, do this to prevent exception
+		if not task.entries:
+			return False
+
 		# check some details first
 		##check entry's link field
 		if not task.entries[0].get('link'):
