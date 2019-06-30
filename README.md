@@ -38,6 +38,11 @@ tasks:
       <<: *transmission
       action: add 
 ```
+# *h&r detection for ourbits*
+by adding `not_hr: yes` to configuration file, it would accept only not in h&r mode torrents.
+
+remember this config is not available for other sites!
+
 # updates
 - 2019-06-30 add ourbits's h&r detection (MAYBE NOT STABLE)
 
