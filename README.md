@@ -46,7 +46,7 @@ only tested for the following sites: HDChina TJUPT NYPT Ourbits BYRBT MTeam
 
 *theoratically* works for all sites based on NexusPHP, but if it met some sites such as HDChina or NPUBits which changed NexuxPHP's original frontend, it would crush :)
 
-so, use this plugin **at your own risks!** 
+so, use this plugin **at your own risk!** 
 
 # to-do list
 - add crush handler
