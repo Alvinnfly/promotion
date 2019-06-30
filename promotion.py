@@ -8,7 +8,6 @@ from flexget import plugin
 from flexget.event import event
 
 import requests
-# import brotli
 from bs4 import BeautifulSoup
 
 log = logging.getLogger('promotion')
@@ -22,10 +21,10 @@ class Filter_Promotion(object):
 		HDChina TJUPT NYPT Ourbits BYRBT NPUBits MTeam...
 
 		Example::
-			promotion:
+			promotion: 
 			  action: accept
-			  cookie: your cookie here
-			  username: your username here
+			  cookie: * your cookie here *
+			  username: * your username here *
 			  promotion: free/twoupfree/halfdown/twouphalfdown/thirtypercent/none
 			  not_hr: yes [optional]
 
@@ -35,7 +34,7 @@ class Filter_Promotion(object):
 	          'properties': {
 		          'action': {
 			          'type': 'string',
-			          'enum': ['accept', 'reject', 'do_nothing'],
+			          'enum': ['accept', 'reject'],
 			          'default': 'accept',
 		          },
 		          'cookie': {
@@ -94,7 +93,7 @@ class Filter_Promotion(object):
 			r = requests.get(link, headers=headers, timeout=30)
 			r.raise_for_status()
 			r.encoding = r.apparent_encoding
-			response = r.text  # brotli.decompress(r.content).decode('utf-8')
+			response = r.text
 			log.verbose('get page succeed')
 		except:
 			log.critical('get page failed, please check connection')
@@ -130,10 +129,14 @@ class Filter_Promotion(object):
 			details_dict = self.analyze_tju_detail(response)
 		elif "ourbits.club" in link:
 			details_dict = self.analyze_ob_detail(response)
+		elif "npupt.com" in link:
+			details_dict = self.analyze_npu_detail(response)
+		elif "bt.byr.cn" in link:
+			details_dict = self.analyze_byr_detail(response)
 		else:
 			details_dict = self.analyze_nexusphp_detail(response)
 
-		# process ourbits h&r
+		# process ourbits's h&r
 		if config['not_hr'] and details_dict['is_hr']:
 			return False
 
@@ -165,6 +168,18 @@ class Filter_Promotion(object):
 	def analyze_nexusphp_detail(self, response):
 		soup = BeautifulSoup(response, 'html.parser')
 		topic_element = soup.find_all('h1', id="top")[0]
+		promotion_element = topic_element.b
+		if promotion_element:
+			promotion = promotion_element.font['class'][0]
+			log.verbose('torrent promotion status is {}'.format(promotion))
+			return {'promotion': promotion}
+		else:
+			log.verbose('torrent has no promotion')
+			return {'promotion': 'none'}
+
+	def analyze_byr_detail(self, response):
+		soup = BeautifulSoup(response, 'html.parser')
+		topic_element = soup.find_all('h1', id="share")[0]
 		promotion_element = topic_element.b
 		if promotion_element:
 			promotion = promotion_element.font['class'][0]
@@ -209,6 +224,25 @@ class Filter_Promotion(object):
 			details_dict['is_hr'] = False
 
 		return details_dict
+
+	def analyze_npu_detail(self, response):
+		convert = {
+			'Free': 'free',
+			'2X Free': 'twoupfree',
+			'50%': 'halfdown',
+			'2X 50%': 'twouphalfdown',
+			'30%': 'thirtypercent',
+		}
+		soup = BeautifulSoup(response, 'html.parser')
+		topic_element = soup.find_all('div', class_="jtextfill")[0]
+		promotion_element = topic_element.span.img
+		if promotion_element:
+			promotion = convert[promotion_element['alt']]
+			log.verbose('torrent promotion status is {}'.format(promotion))
+			return {'promotion': promotion}
+		else:
+			log.verbose('torrent has no promotion')
+			return {'promotion': 'none'}
 
 
 @event('plugin.register')
