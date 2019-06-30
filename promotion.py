@@ -19,7 +19,7 @@ class Filter_Promotion(object):
 		Detect torrent's *current* promotion status.
 		Only support sites based on NexusPHP
 	Support sites (tested):
-		HDChina TJUPT NYPT Ourbits BYRBT NPUBits MTeam...
+		HDChina TJUPT NYPT Ourbits BYRBT MTeam...
 
 		Example::
 			promotion:
