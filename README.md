@@ -56,3 +56,4 @@ so, use this plugin **at your own risk!**
 
 # to-do list
 - add crush handler
+- make promotion field an array
