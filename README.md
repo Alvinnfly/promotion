@@ -45,7 +45,7 @@ by adding `not_hr: yes` to configuration file, it would accept only not in h&r m
 remember this config is not available for other sites!
 
 # updates
-- 2019-06-30 add ourbits's h&r detection (MAYBE NOT STABLE)
+- 2019-06-30 add ourbits's h&r detection 
 
 # warning
 only tested for the following sites: HDChina TJUPT NYPT Ourbits BYRBT MTeam
