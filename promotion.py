@@ -9,6 +9,7 @@ from flexget.event import event
 
 import requests
 from bs4 import BeautifulSoup
+import re
 
 log = logging.getLogger('promotion')
 
@@ -18,7 +19,7 @@ class Filter_Promotion(object):
 		Detect torrent's *current* promotion status.
 		Only support sites based on NexusPHP
 	Support sites (tested):
-		HDChina TJUPT NYPT Ourbits BYRBT NPUBits MTeam...
+		HDChina TJUPT NYPT Ourbits BYRBT NPUBits MTeam TTG...
 
 		Example::
 			promotion: 
@@ -69,9 +70,10 @@ class Filter_Promotion(object):
 			log.critical('link not found, plz add "other_fields: [link]" to rss plugin config')
 			return False
 		##`not_hr` is only available for ourbits
-		if config['not_hr'] and 'ourbits' not in task.entries[0].get('link'):
-			log.critical('`not_hr` parameter is only available for ourbits')
-			return False
+		if config['not_hr']:
+			if not re.findall('ourbits|totheglory', task.entries[0].get('link')):
+				log.critical('`not_hr` parameter is not available for this site')
+				return False
 
 		for entry in task.entries:
 			link = entry.get('link')
@@ -137,10 +139,12 @@ class Filter_Promotion(object):
 			details_dict = self.analyze_npu_detail(response)
 		elif "bt.byr.cn" in link:
 			details_dict = self.analyze_byr_detail(response)
+		elif "totheglory.im" in link:
+			details_dict = self.analyze_ttg_detail(response)
 		else:
 			details_dict = self.analyze_nexusphp_detail(response)
 
-		# process ourbits's h&r
+		# process h&r
 		if config['not_hr'] and details_dict['is_hr']:
 			return False
 
@@ -247,6 +251,39 @@ class Filter_Promotion(object):
 		else:
 			log.verbose('torrent has no promotion')
 			return {'promotion': 'none'}
+
+	def analyze_ttg_detail(self, response):
+		convert = {
+			'free': 'free',
+			'half': 'halfdown',
+			'30': 'thirtypercent',
+		}
+		details_dict = {}
+		soup = BeautifulSoup(response, 'html.parser')
+
+		promotion_element = soup.find_all('img', class_="topic", src=re.compile(r"\/pic\/.*"))
+		if promotion_element:
+			promotion_raw = re.findall(r'/pic/ico_(.*).gif', promotion_element[0]['src'])[0]
+			try:
+				promotion = convert[promotion_raw]
+				log.verbose('torrent promotion status is {}'.format(promotion))
+			except:
+				promotion = ''
+				log.warning('torrent promotion status is {}, unsupported'.format(promotion_raw))
+			details_dict['promotion'] = promotion
+		else:
+			log.verbose('torrent has no promotion')
+			details_dict['promotion'] = 'none'
+
+		hr_element = soup.find_all('img', alt='Hit & Run')
+		if hr_element:
+			log.verbose('torrent is h&r')
+			details_dict['is_hr'] = True
+		else:
+			log.verbose('torrent is not h&r')
+			details_dict['is_hr'] = False
+
+		return details_dict
 
 
 @event('plugin.register')
