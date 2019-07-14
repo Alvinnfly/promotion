@@ -261,9 +261,9 @@ class Filter_Promotion(object):
 		details_dict = {}
 		soup = BeautifulSoup(response, 'html.parser')
 
-		promotion_element = soup.find_all('img', class_="topic", src=re.compile(r"\/pic\/.*"))
+		promotion_element = soup.find_all('img', class_="topic", src=re.compile(r".*pic/ico_.*"))
 		if promotion_element:
-			promotion_raw = re.findall(r'/pic/ico_(.*).gif', promotion_element[0]['src'])[0]
+			promotion_raw = re.findall(r'.*pic/ico_(.*).gif', promotion_element[0]['src'])[0]
 			try:
 				promotion = convert[promotion_raw]
 				log.verbose('torrent promotion status is {}'.format(promotion))
