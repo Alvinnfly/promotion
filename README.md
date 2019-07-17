@@ -39,7 +39,7 @@ tasks:
       <<: *transmission
       action: add 
 ```
-# *h&r detection for certain sites
+# *h&r detection for certain sites*
 by adding `not_hr: yes` to configuration file, it would accept only not in h&r mode torrents.
 
 remember this config is not available for other sites!
@@ -48,7 +48,7 @@ remember this config is not available for other sites!
 - 2019-06-30 add ourbits's h&r detection 
 
 # warning
-only tested for the following sites: HDChina TJUPT NYPT Ourbits BYRBT MTeam TTG
+only tested for the following sites: <del>HDChina</del> TJUPT NYPT Ourbits BYRBT MTeam TTG
 h&r attack available for: Ourbits TTG
 
 *theoratically* works for all sites based on NexusPHP, but if it met some sites such as HDChina or NPUBits which changed NexuxPHP's original frontend, it would crush :)
