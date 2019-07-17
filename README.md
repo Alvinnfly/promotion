@@ -49,7 +49,8 @@ remember this config is not available for other sites!
 
 # warning
 only tested for the following sites: <del>HDChina</del> TJUPT NYPT Ourbits BYRBT MTeam TTG
-h&r attack available for: Ourbits TTG
+
+h&r detect available for: Ourbits TTG
 
 *theoratically* works for all sites based on NexusPHP, but if it met some sites such as HDChina or NPUBits which changed NexuxPHP's original frontend, it would crush :)
 
