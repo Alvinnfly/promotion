@@ -48,7 +48,7 @@ remember this config is not available for other sites!
 - 2019-06-30 add ourbits's h&r detection 
 - 2019-07-15 add ttg's h&r detection 
 # warning
-only tested for the following sites: <del>HDChina</del> TJUPT NYPT Ourbits BYRBT MTeam TTG
+only tested for the following sites: <del>HDChina</del> TJUPT NYPT NPUPT Ourbits BYRBT MTeam TTG
 
 h&r detect available for: Ourbits TTG
 
