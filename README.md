@@ -14,7 +14,7 @@ promotion:
 ```
 - run flexget
 
-# a demo config.yml
+# a config.yml demo 
 executing the following configuration file would add free torrents in rss link to transmission
 ```
 templates:
