@@ -10,6 +10,7 @@ A homemade flexget plugin to detect torrents' promotion status, only support pri
 promotion: 
   action: accept
   cookie: * your cookie here *
+  username: * your username here *
   promotion: free/twoupfree/halfdown/twouphalfdown/thirtypercent/none
 ```
 - run flexget
