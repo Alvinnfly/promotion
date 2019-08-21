@@ -121,7 +121,8 @@ class Filter_Promotion(object):
 
 		# assert torrent id
 		try:
-			assert '没有该ID的种子' not in response
+			assert '没有该ID的种子' not in response 
+                        assert '你没有该权限！' not in response
 		# log.verbose('torrent id is valid')
 		except:
 			log.critical('torrent id is not valid, torrent {} does not exist'.format(link))
