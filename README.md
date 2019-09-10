@@ -10,11 +10,12 @@ A homemade flexget plugin to detect torrents' promotion status, only support pri
 promotion: 
   action: accept
   cookie: * your cookie here *
+  username: * your username here *
   promotion: free/twoupfree/halfdown/twouphalfdown/thirtypercent/none
 ```
 - run flexget
 
-# a demo config.yml
+# a config.yml demo 
 executing the following configuration file would add free torrents in rss link to transmission
 ```
 templates:
@@ -39,17 +40,18 @@ tasks:
       <<: *transmission
       action: add 
 ```
-# *h&r detection for certain sites
+# *h&r detection for certain sites*
 by adding `not_hr: yes` to configuration file, it would accept only not in h&r mode torrents.
 
 remember this config is not available for other sites!
 
 # updates
 - 2019-06-30 add ourbits's h&r detection 
-
+- 2019-07-15 add ttg's h&r detection 
 # warning
-only tested for the following sites: HDChina TJUPT NYPT Ourbits BYRBT MTeam TTG
-h&r attack available for: Ourbits TTG
+only tested for the following sites: <del>HDChina</del> TJUPT HDSky NYPT NPUPT SSD Ourbits BYRBT MTeam TTG
+
+h&r detect available for: Ourbits TTG
 
 *theoratically* works for all sites based on NexusPHP, but if it met some sites such as HDChina or NPUBits which changed NexuxPHP's original frontend, it would crush :)
 
