@@ -45,9 +45,10 @@ class Filter_Promotion(object):
 			          'type': 'string',
 		          },
 		          'promotion': {
-			          'type': 'string',
-			          'enum': ['free', 'twoupfree', 'halfdown', 'twouphalfdown', 'thirtypercent', 'none'],
-			          'default': 'free',
+			          "oneOf": [{"type": "array"}, {"type": "string"}],
+			          # 'type': 'array',
+			          # 'enum': ['free', 'twoupfree', 'halfdown', 'twouphalfdown', 'thirtypercent', 'none'],
+			          'default': ['free'],
 		          },
 		          'not_hr': {
 			          'type': 'boolean',
@@ -69,7 +70,7 @@ class Filter_Promotion(object):
 		if not task.entries[0].get('link'):
 			log.critical('link not found, plz add "other_fields: [link]" to rss plugin config')
 			return False
-		##`not_hr` is only available for ourbits
+		##`not_hr` is only available for certain sites
 		if config['not_hr']:
 			if not re.findall('ourbits|totheglory', task.entries[0].get('link')):
 				log.critical('`not_hr` parameter is not available for this site')
@@ -81,7 +82,7 @@ class Filter_Promotion(object):
 				if self.detect_promotion_status(link, config):
 					entry.accept('Entry `%s` is `%s`' % (entry['title'], config['promotion']), remember=True)
 				else:
-					entry.reject('Entry `%s` is not `%s`' % (entry['title'], config['promotion']), remember=True)
+					entry.reject('Entry `%s` is not `%s`' % (entry['title'], config['promotion']))
 
 	def detect_promotion_status(self, link, config):
 		log.verbose('start to detect %s promotion status' % link)
@@ -122,6 +123,7 @@ class Filter_Promotion(object):
 		# assert torrent id
 		try:
 			assert '没有该ID的种子' not in response
+			assert '你没有该权限！' not in response
 		# log.verbose('torrent id is valid')
 		except:
 			log.critical('torrent id is not valid, torrent {} does not exist'.format(link))
@@ -141,6 +143,8 @@ class Filter_Promotion(object):
 			details_dict = self.analyze_byr_detail(response)
 		elif "totheglory.im" in link:
 			details_dict = self.analyze_ttg_detail(response)
+		elif "chdbits.co" in link:
+			details_dict = self.analyze_chd_detail(response)
 		else:
 			details_dict = self.analyze_nexusphp_detail(response)
 
@@ -284,6 +288,25 @@ class Filter_Promotion(object):
 			details_dict['is_hr'] = False
 
 		return details_dict
+
+	def analyze_chd_detail(self, response):
+		convert = {
+			'Free': 'free',
+			'2X Free': 'twoupfree',
+			'50%': 'halfdown',
+			'2X 50%': 'twouphalfdown',
+			'30%': 'thirtypercent',
+		}
+		soup = BeautifulSoup(response, 'html.parser')
+		topic_element = soup.find_all('h1', id="top")[0]
+		promotion_element = topic_element.img
+		if promotion_element:
+			promotion = convert[promotion_element['alt']]
+			log.verbose('torrent promotion status is {}'.format(promotion))
+			return {'promotion': promotion}
+		else:
+			log.verbose('torrent has no promotion')
+			return {'promotion': 'none'}
 
 
 @event('plugin.register')
